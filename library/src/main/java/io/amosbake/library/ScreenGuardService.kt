@@ -6,6 +6,9 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Message
 import android.util.Log
+import io.amosbake.library.broadcast.BroadcasterHelper
+import io.amosbake.library.screen.DefaultScreenStatusListener
+import io.amosbake.library.screen.ScreenStatusBroadcastReceiver
 import java.util.logging.Logger
 
 /**
@@ -14,8 +17,9 @@ import java.util.logging.Logger
  */
 class ScreenGuardService : Service() {
     companion object {
-        val STATUS_KEY = "status"
-        val STATUS_LOCK_SCREEN = 1
+        val ACTION_KEY = "action"
+        val ACTION_UNKOWN = -1
+        val ACTION_LISTEN_LOCKSCREEN = 1
         val STATUS_TIME = 2
         val STATUS_BATTERY = 4
 
@@ -24,16 +28,7 @@ class ScreenGuardService : Service() {
     }
 
     private var status: Int = 0
-    private val handler: Handler = object : Handler() {
-
-        override fun handleMessage(msg: Message?) {
-            super.handleMessage(msg)
-            if (msg?.what == MSG_SHOW) {
-                Log.i(TAG, "status " + status)
-                sendEmptyMessageDelayed(MSG_SHOW, 500)
-            }
-        }
-    }
+    val broadcastHelper:BroadcasterHelper = BroadcasterHelper(this)
 
     override fun onBind(p0: Intent): IBinder? {
         return null
@@ -45,11 +40,13 @@ class ScreenGuardService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        var result = super.onStartCommand(intent, flags, startId)
-        status = intent?.getIntExtra(STATUS_KEY, 0) ?: 0
-        handler.removeMessages(MSG_SHOW)
-        handler.sendEmptyMessageDelayed(MSG_SHOW, 300)
-        return result
+        val action = intent?.getIntExtra(ACTION_KEY, ACTION_UNKOWN) ?: ACTION_UNKOWN
+        when(action){
+            ACTION_LISTEN_LOCKSCREEN ->{
+                broadcastHelper.registerBatteryStatuListener(ScreenStatusBroadcastReceiver())
+            }
+        }
+        return super.onStartCommand(intent, flags, startId)
     }
 
     override fun onDestroy() {

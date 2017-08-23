@@ -15,10 +15,10 @@ class ScreenStatusBroadcastReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         if (context.isCalling() && LockScreenManager.configs.switch) {
-            if(intent.action?.equals(Intent.ACTION_SCREEN_ON)?:false){
+            if(intent.action?.equals(Intent.ACTION_SCREEN_ON) == true){
                 LockScreenManager.isScreenOn = true
                 screenOn()
-            }else if (intent.action?.equals(Intent.ACTION_SCREEN_OFF)?:false){
+            }else if (intent.action?.equals(Intent.ACTION_SCREEN_OFF) == true){
                 LockScreenManager.isScreenOn = false
                 screenOff()
             }
